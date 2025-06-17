@@ -1,0 +1,83 @@
+import os
+
+HISTORY_FILE = "calc_history.txt"
+
+# ✅ Calculator Class
+class Calculator:
+    def __init__(self):
+        self.history = []
+
+    def evaluate_expression(self, expression):
+        try:
+            result = eval(expression)
+            entry = f"{expression} = {result}"
+            self.history.append(entry)
+            return result
+        except ZeroDivisionError:
+            return "Error: Division by zero."
+        except Exception:
+            return "Error: Invalid expression."
+
+    def show_history(self):
+        if not self.history:
+            print("No history yet.")
+        else:
+            print("\n--- Calculation History ---")
+            for entry in self.history:
+                print(entry)
+
+    def save_history(self):
+        try:
+            with open(HISTORY_FILE, "w") as file:
+                for entry in self.history:
+                    file.write(entry + "\n")
+            print("History saved to file.")
+        except Exception as e:
+            print("Error saving history:", e)
+
+    def load_history(self):
+        if os.path.exists(HISTORY_FILE):
+            try:
+                with open(HISTORY_FILE, "r") as file:
+                    self.history = [line.strip() for line in file.readlines()]
+            except Exception as e:
+                print("Error loading history:", e)
+
+# ✅ Display Menu
+def show_menu():
+    print("\n===== Basic Calculator =====")
+    print("1. Perform Calculation")
+    print("2. View History")
+    print("3. Save History to File")
+    print("4. Exit")
+
+# ✅ Main Program
+def main():
+    calc = Calculator()
+    calc.load_history()
+
+    while True:
+        show_menu()
+        choice = input("Enter your choice (1-4): ")
+
+        if choice == "1":
+            expr = input("Enter expression (e.g., 2+3*4): ")
+            result = calc.evaluate_expression(expr)
+            print("Result:", result)
+
+        elif choice == "2":
+            calc.show_history()
+
+        elif choice == "3":
+            calc.save_history()
+
+        elif choice == "4":
+            print("Exiting calculator. Goodbye!")
+            break
+
+        else:
+            print("Invalid choice. Please try again.")
+
+# ✅ Start Program
+if __name__ == "__main__":
+    main()
