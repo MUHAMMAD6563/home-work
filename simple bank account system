@@ -1,0 +1,161 @@
+import json
+import os
+from datetime import datetime
+
+DATA_FILE = "bank_accounts.json"
+
+
+# ✅ Account class
+class BankAccount:
+    def __init__(self, name, account_number, balance=0, transactions=None):
+        self.name = name
+        self.account_number = account_number
+        self.balance = balance
+        self.transactions = transactions if transactions else []
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "account_number": self.account_number,
+            "balance": self.balance,
+            "transactions": self.transactions
+        }
+
+
+# ✅ Load all accounts
+def load_accounts():
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r") as file:
+                data = json.load(file)
+                return [BankAccount(**acc) for acc in data]
+        except Exception as e:
+            print("Error loading accounts:", e)
+    return []
+
+
+# ✅ Save all accounts
+def save_accounts(accounts):
+    try:
+        with open(DATA_FILE, "w") as file:
+            json.dump([acc.to_dict() for acc in accounts], file, indent=4)
+    except Exception as e:
+        print("Error saving accounts:", e)
+
+
+# ✅ Create Account
+def create_account(accounts):
+    try:
+        name = input("Enter Account Holder Name: ")
+        acc_no = input("Enter New Account Number: ")
+
+        for acc in accounts:
+            if acc.account_number == acc_no:
+                print("Account with this number already exists.")
+                return
+
+        new_acc = BankAccount(name, acc_no)
+        accounts.append(new_acc)
+        save_accounts(accounts)
+        print("Account created successfully.")
+    except Exception as e:
+        print("Error creating account:", e)
+
+
+# ✅ Deposit
+def deposit(accounts):
+    try:
+        acc_no = input("Enter Account Number: ")
+        amount = float(input("Enter deposit amount: "))
+
+        for acc in accounts:
+            if acc.account_number == acc_no:
+                acc.balance += amount
+                acc.transactions.append(f"{datetime.now()} - Deposited: {amount}")
+                save_accounts(accounts)
+                print("Deposit successful.")
+                return
+        print("Account not found.")
+    except Exception as e:
+        print("Error during deposit:", e)
+
+
+# ✅ Withdraw
+def withdraw(accounts):
+    try:
+        acc_no = input("Enter Account Number: ")
+        amount = float(input("Enter withdrawal amount: "))
+
+        for acc in accounts:
+            if acc.account_number == acc_no:
+                if acc.balance >= amount:
+                    acc.balance -= amount
+                    acc.transactions.append(f"{datetime.now()} - Withdrawn: {amount}")
+                    save_accounts(accounts)
+                    print("Withdrawal successful.")
+                else:
+                    print("Insufficient balance.")
+                return
+        print("Account not found.")
+    except Exception as e:
+        print("Error during withdrawal:", e)
+
+
+# ✅ Check Balance
+def check_balance(accounts):
+    acc_no = input("Enter Account Number: ")
+    for acc in accounts:
+        if acc.account_number == acc_no:
+            print(f"Account Holder: {acc.name}")
+            print(f"Current Balance: {acc.balance}")
+            return
+    print("Account not found.")
+
+
+# ✅ Transaction History
+def transaction_history(accounts):
+    acc_no = input("Enter Account Number: ")
+    for acc in accounts:
+        if acc.account_number == acc_no:
+            print(f"Transaction History for {acc.name}:")
+            for tx in acc.transactions:
+                print(tx)
+            return
+    print("Account not found.")
+
+
+# ✅ Main menu
+def main_menu():
+    accounts = load_accounts()
+    while True:
+        print("\n==== Simple Bank Account System ====")
+        print("1. Create Account")
+        print("2. Deposit")
+        print("3. Withdraw")
+        print("4. Check Balance")
+        print("5. Transaction History")
+        print("6. Exit")
+
+        try:
+            choice = input("Enter choice (1-6): ")
+            if choice == "1":
+                create_account(accounts)
+            elif choice == "2":
+                deposit(accounts)
+            elif choice == "3":
+                withdraw(accounts)
+            elif choice == "4":
+                check_balance(accounts)
+            elif choice == "5":
+                transaction_history(accounts)
+            elif choice == "6":
+                print("Exiting... Thank you!")
+                break
+            else:
+                print("Invalid choice.")
+        except Exception as e:
+            print("An error occurred:", e)
+
+
+if __name__ == "__main__":
+    main_menu()
