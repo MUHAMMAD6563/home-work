@@ -1,0 +1,173 @@
+import json
+import os
+
+DATA_FILE = "students.json"
+
+class Student:
+    def __init__(self, name, roll, student_class, marks):
+        self.name = name
+        self.roll = roll
+        self.student_class = student_class
+        self.marks = marks
+
+    def to_dict(self):
+        return {
+            'name': self.name,
+            'roll': self.roll,
+            'class': self.student_class,
+            'marks': self.marks
+        }
+
+class StudentManager:
+    def __init__(self):
+        self.students = self.load_data()
+
+    def load_data(self):
+        if os.path.exists(DATA_FILE):
+            try:
+                with open(DATA_FILE, 'r') as file:
+                    return json.load(file)
+            except:
+                print("Error reading data file.")
+                return []
+        else:
+            return []
+
+    def save_data(self):
+        try:
+            with open(DATA_FILE, 'w') as file:
+                json.dump(self.students, file, indent=4)
+        except:
+            print("Error saving data.")
+
+    def add_student(self):
+        name = input("Enter name: ")
+        roll = input("Enter roll number: ")
+        student_class = input("Enter class: ")
+        try:
+            marks = float(input("Enter marks: "))
+        except:
+            print("Invalid marks. Must be a number.")
+            return
+
+        for student in self.students:
+            if student['roll'] == roll:
+                print("Student with this roll number already exists.")
+                return
+
+        new_student = Student(name, roll, student_class, marks)
+        self.students.append(new_student.to_dict())
+        self.save_data()
+        print("Student added successfully.\n")
+
+    def display_students(self):
+        if len(self.students) == 0:
+            print("No student records.\n")
+        else:
+            for s in self.students:
+                print("Name:", s['name'])
+                print("Roll:", s['roll'])
+                print("Class:", s['class'])
+                print("Marks:", s['marks'])
+                print("-----")
+
+    def search_student(self):
+        roll = input("Enter roll number to search: ")
+        found = False
+        for s in self.students:
+            if s['roll'] == roll:
+                print("Name:", s['name'])
+                print("Class:", s['class'])
+                print("Marks:", s['marks'])
+                found = True
+                break
+        if not found:
+            print("Student not found.\n")
+
+    def update_student(self):
+        roll = input("Enter roll number to update: ")
+        found = False
+        for s in self.students:
+            if s['roll'] == roll:
+                name = input("Enter new name (leave blank to keep current): ")
+                student_class = input("Enter new class (leave blank to keep current): ")
+                marks_input = input("Enter new marks (leave blank to keep current): ")
+
+                if name != "":
+                    s['name'] = name
+                if student_class != "":
+                    s['class'] = student_class
+                if marks_input != "":
+                    try:
+                        s['marks'] = float(marks_input)
+                    except:
+                        print("Invalid marks. Skipping marks update.")
+
+                found = True
+                self.save_data()
+                print("Student updated.\n")
+                break
+        if not found:
+            print("Student not found.\n")
+
+    def delete_student(self):
+        roll = input("Enter roll number to delete: ")
+        index_to_delete = -1
+        for i in range(len(self.students)):
+            if self.students[i]['roll'] == roll:
+                index_to_delete = i
+                break
+
+        if index_to_delete != -1:
+            del self.students[index_to_delete]
+            self.save_data()
+            print("Student deleted.\n")
+        else:
+            print("Student not found.\n")
+
+def main():
+    manager = StudentManager()
+
+    while True:
+        print("=== Student Management System ===")
+        print("1. Add Student")
+        print("2. Display Students")
+        print("3. Search Student")
+        print("4. Update Student")
+        print("5. Delete Student")
+        print("6. Exit")
+
+        choice = input("Enter choice (1-6): ")
+
+        if choice == '1':
+            manager.add_student()
+        elif choice == '2':
+            manager.display_students()
+        elif choice == '3':
+            manager.search_student()
+        elif choice == '4':
+            manager.update_student()
+        elif choice == '5':
+            manager.delete_student()
+        elif choice == '6':
+            print("Exiting program.")
+            break
+        else:
+            print("Invalid choice. Try again.\n")
+
+if __name__ == "__main__":
+    main()
+
+# Optional: Check if JSON data is loading correctly
+print("\n--- Loaded Student Records from File ---")
+try:
+    with open("students.json", "r") as file:
+        data = json.load(file)
+    for student in data:
+        print("Name:", student["name"])
+        print("Roll:", student["roll"])
+        print("Class:", student["class"])
+        print("Marks:", student["marks"])
+        print("------")
+except Exception as e:
+    print("Error loading students.json:", e)
