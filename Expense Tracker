@@ -1,0 +1,129 @@
+import os
+
+EXPENSE_FILE = "expenses.txt"
+
+class Expense:
+    def __init__(self, date, category, amount):
+        self.date = date
+        self.category = category
+        self.amount = float(amount)
+
+    def to_string(self):
+        return f"{self.date},{self.category},{self.amount}"
+
+    @staticmethod
+    def from_string(data):
+        date, category, amount = data.strip().split(",")
+        return Expense(date, category, float(amount))
+
+class ExpenseTracker:
+    def __init__(self):
+        self.expenses = []
+
+    def add_expense(self, date, category, amount):
+        try:
+            expense = Expense(date, category, amount)
+            self.expenses.append(expense)
+            print("✔️ Expense added.")
+        except Exception as e:
+            print("Error adding expense:", e)
+
+    def view_expenses(self):
+        if not self.expenses:
+            print("No expenses recorded.")
+        else:
+            print("\n--- All Expenses ---")
+            for exp in self.expenses:
+                print(f"{exp.date} | {exp.category} | Rs. {exp.amount:.2f}")
+
+    def calculate_total(self):
+        total = sum(exp.amount for exp in self.expenses)
+        print(f"Total Expenses: Rs. {total:.2f}")
+
+    def search_by_date(self, date):
+        found = False
+        print(f"\n--- Expenses on {date} ---")
+        for exp in self.expenses:
+            if exp.date == date:
+                print(f"{exp.category} | Rs. {exp.amount:.2f}")
+                found = True
+        if not found:
+            print("No expenses found for this date.")
+
+    def category_summary(self):
+        summary = {}
+        for exp in self.expenses:
+            if exp.category in summary:
+                summary[exp.category] += exp.amount
+            else:
+                summary[exp.category] = exp.amount
+        print("\n--- Category Summary ---")
+        for cat, amt in summary.items():
+            print(f"{cat}: Rs. {amt:.2f}")
+
+    def save_expenses(self):
+        try:
+            with open(EXPENSE_FILE, "w") as file:
+                for exp in self.expenses:
+                    file.write(exp.to_string() + "\n")
+            print("Expenses saved to file.")
+        except Exception as e:
+            print("Error saving expenses:", e)
+
+    def load_expenses(self):
+        if os.path.exists(EXPENSE_FILE):
+            try:
+                with open(EXPENSE_FILE, "r") as file:
+                    self.expenses = [Expense.from_string(line) for line in file.readlines()]
+            except Exception as e:
+                print("Error loading expenses:", e)
+
+def show_menu():
+    print("\n=== Expense Tracker ===")
+    print("1. Add Expense")
+    print("2. View All Expenses")
+    print("3. Calculate Total")
+    print("4. Search by Date")
+    print("5. Category Summary")
+    print("6. Save to File")
+    print("7. Exit")
+
+def main():
+    tracker = ExpenseTracker()
+    tracker.load_expenses()
+
+    while True:
+        show_menu()
+        choice = input("Enter your choice (1-7): ")
+
+        if choice == "1":
+            date = input("Enter date (YYYY-MM-DD): ")
+            category = input("Enter category (e.g. Food, Travel): ")
+            amount = input("Enter amount: ")
+            tracker.add_expense(date, category, amount)
+
+        elif choice == "2":
+            tracker.view_expenses()
+
+        elif choice == "3":
+            tracker.calculate_total()
+
+        elif choice == "4":
+            date = input("Enter date to search (YYYY-MM-DD): ")
+            tracker.search_by_date(date)
+
+        elif choice == "5":
+            tracker.category_summary()
+
+        elif choice == "6":
+            tracker.save_expenses()
+
+        elif choice == "7":
+            print("Exiting... Goodbye!")
+            break
+
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
