@@ -1,0 +1,117 @@
+import json
+import os
+
+DATA_FILE = "tasks.json"
+
+# ✅ Task Class
+class Task:
+    def __init__(self, description, completed=False):
+        self.description = description
+        self.completed = completed
+
+    def to_dict(self):
+        return {
+            "description": self.description,
+            "completed": self.completed
+        }
+
+# ✅ Load Tasks from file
+def load_tasks():
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r") as file:
+                data = json.load(file)
+                return [Task(**task) for task in data]
+        except Exception as e:
+            print("Error loading tasks:", e)
+    return []
+
+# ✅ Save Tasks to file
+def save_tasks(tasks):
+    try:
+        with open(DATA_FILE, "w") as file:
+            json.dump([task.to_dict() for task in tasks], file, indent=4)
+    except Exception as e:
+        print("Error saving tasks:", e)
+
+# ✅ Add Task
+def add_task(tasks):
+    try:
+        desc = input("Enter task description: ")
+        task = Task(desc)
+        tasks.append(task)
+        save_tasks(tasks)
+        print("Task added successfully.")
+    except Exception as e:
+        print("Error adding task:", e)
+
+# ✅ View Tasks
+def view_tasks(tasks):
+    if not tasks:
+        print("No tasks found.")
+    else:
+        print("\n--- Pending Tasks ---")
+        for idx, task in enumerate(tasks, 1):
+            status = "Done" if task.completed else "Pending"
+            print(f"{idx}. {task.description} [{status}]")
+
+# ✅ Mark as Done
+def mark_task_done(tasks):
+    try:
+        view_tasks(tasks)
+        index = int(input("Enter task number to mark as done: ")) - 1
+        if 0 <= index < len(tasks):
+            tasks[index].completed = True
+            save_tasks(tasks)
+            print("Task marked as completed.")
+        else:
+            print("Invalid task number.")
+    except Exception as e:
+        print("Error marking task as done:", e)
+
+# ✅ Delete Task
+def delete_task(tasks):
+    try:
+        view_tasks(tasks)
+        index = int(input("Enter task number to delete: ")) - 1
+        if 0 <= index < len(tasks):
+            del tasks[index]
+            save_tasks(tasks)
+            print("Task deleted.")
+        else:
+            print("Invalid task number.")
+    except Exception as e:
+        print("Error deleting task:", e)
+
+# ✅ Main Menu
+def main_menu():
+    tasks = load_tasks()
+    while True:
+        print("\n====== To-Do List App ======")
+        print("1. Add Task")
+        print("2. View Tasks")
+        print("3. Mark Task as Done")
+        print("4. Delete Task")
+        print("5. Exit")
+
+        try:
+            choice = input("Enter your choice (1-5): ")
+            if choice == "1":
+                add_task(tasks)
+            elif choice == "2":
+                view_tasks(tasks)
+            elif choice == "3":
+                mark_task_done(tasks)
+            elif choice == "4":
+                delete_task(tasks)
+            elif choice == "5":
+                print("Exiting... Goodbye!")
+                break
+            else:
+                print("Invalid choice. Try again.")
+        except Exception as e:
+            print("An error occurred:", e)
+
+# ✅ Run the App
+if __name__ == "__main__":
+    main_menu()
