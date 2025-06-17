@@ -1,0 +1,136 @@
+import os
+
+INVENTORY_FILE = "inventory.txt"
+
+class Product:
+    def __init__(self, product_id, name, quantity):
+        self.product_id = product_id
+        self.name = name
+        self.quantity = int(quantity)
+
+    def to_string(self):
+        return f"{self.product_id},{self.name},{self.quantity}"
+
+    @staticmethod
+    def from_string(data):
+        product_id, name, quantity = data.strip().split(",")
+        return Product(product_id, name, quantity)
+
+class InventoryManager:
+    def __init__(self):
+        self.products = []
+
+    def add_product(self, product_id, name, quantity):
+        try:
+            for product in self.products:
+                if product.product_id == product_id:
+                    print("Product with this ID already exists.")
+                    return
+            new_product = Product(product_id, name, quantity)
+            self.products.append(new_product)
+            print("✔️ Product added.")
+        except Exception as e:
+            print("Error adding product:", e)
+
+    def view_inventory(self):
+        if not self.products:
+            print("Inventory is empty.")
+        else:
+            print("\n--- Inventory ---")
+            for p in self.products:
+                print(f"ID: {p.product_id} | Name: {p.name} | Quantity: {p.quantity}")
+
+    def update_quantity(self, product_id, new_quantity):
+        for product in self.products:
+            if product.product_id == product_id:
+                product.quantity = int(new_quantity)
+                print("✔️ Quantity updated.")
+                return
+        print("Product not found.")
+
+    def delete_product(self, product_id):
+        for product in self.products:
+            if product.product_id == product_id:
+                self.products.remove(product)
+                print("✔️ Product deleted.")
+                return
+        print("Product not found.")
+
+    def search_product(self, keyword):
+        found = False
+        for product in self.products:
+            if keyword.lower() in product.name.lower() or keyword == product.product_id:
+                print(f"ID: {product.product_id} | Name: {product.name} | Quantity: {product.quantity}")
+                found = True
+        if not found:
+            print("No matching product found.")
+
+    def save_inventory(self):
+        try:
+            with open(INVENTORY_FILE, "w") as file:
+                for product in self.products:
+                    file.write(product.to_string() + "\n")
+            print("Inventory saved.")
+        except Exception as e:
+            print("Error saving inventory:", e)
+
+    def load_inventory(self):
+        if os.path.exists(INVENTORY_FILE):
+            try:
+                with open(INVENTORY_FILE, "r") as file:
+                    self.products = [Product.from_string(line) for line in file.readlines()]
+            except Exception as e:
+                print("Error loading inventory:", e)
+
+def show_menu():
+    print("\n=== Inventory Management System ===")
+    print("1. Add Product")
+    print("2. View Inventory")
+    print("3. Update Quantity")
+    print("4. Delete Product")
+    print("5. Search Product")
+    print("6. Save Inventory")
+    print("7. Exit")
+
+def main():
+    manager = InventoryManager()
+    manager.load_inventory()
+
+    while True:
+        show_menu()
+        choice = input("Enter your choice (1-7): ")
+
+        if choice == "1":
+            pid = input("Enter Product ID: ")
+            name = input("Enter Product Name: ")
+            qty = input("Enter Quantity: ")
+            manager.add_product(pid, name, qty)
+
+        elif choice == "2":
+            manager.view_inventory()
+
+        elif choice == "3":
+            pid = input("Enter Product ID to update: ")
+            qty = input("Enter new quantity: ")
+            manager.update_quantity(pid, qty)
+
+        elif choice == "4":
+            pid = input("Enter Product ID to delete: ")
+            manager.delete_product(pid)
+
+        elif choice == "5":
+            keyword = input("Enter Product Name or ID to search: ")
+            manager.search_product(keyword)
+
+        elif choice == "6":
+            manager.save_inventory()
+
+        elif choice == "7":
+            print("Exiting... Goodbye!")
+            break
+
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
