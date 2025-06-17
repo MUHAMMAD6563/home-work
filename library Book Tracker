@@ -1,0 +1,136 @@
+# home-workimport json
+import os
+
+DATA_FILE = "library_books.json"
+
+
+# Load existing books
+def load_books():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as file:
+            return json.load(file)
+    return []
+
+
+# Save books to file
+def save_books(books):
+    with open(DATA_FILE, "w") as file:
+        json.dump(books, file, indent=4)
+
+
+# Add a new book
+def add_book():
+    title = input("Enter Title: ")
+    author = input("Enter Author: ")
+    isbn = input("Enter ISBN: ")
+
+    books = load_books()
+    for book in books:
+        if book["isbn"] == isbn:
+            print("Book with this ISBN already exists.")
+            return
+
+    books.append({
+        "title": title,
+        "author": author,
+        "isbn": isbn,
+        "status": "Available"
+    })
+    save_books(books)
+    print("Book added successfully.")
+
+
+# Display all books
+def display_books():
+    books = load_books()
+    if not books:
+        print("No books available.")
+        return
+
+    print("\nLibrary Books:")
+    for book in books:
+        print(f"Title: {book['title']} | Author: {book['author']} | ISBN: {book['isbn']} | Status: {book['status']}")
+    print()
+
+
+# Issue a book
+def issue_book():
+    isbn = input("Enter ISBN to issue: ")
+    books = load_books()
+    for book in books:
+        if book["isbn"] == isbn:
+            if book["status"] == "Available":
+                book["status"] = "Issued"
+                save_books(books)
+                print("Book issued successfully.")
+                return
+            else:
+                print("Book is already issued.")
+                return
+    print("Book not found.")
+
+
+# Return a book
+def return_book():
+    isbn = input("Enter ISBN to return: ")
+    books = load_books()
+    for book in books:
+        if book["isbn"] == isbn:
+            if book["status"] == "Issued":
+                book["status"] = "Available"
+                save_books(books)
+                print("Book returned successfully.")
+                return
+            else:
+                print("Book is not issued.")
+                return
+    print("Book not found.")
+
+
+# Search a book
+def search_book():
+    choice = input("Search by Title or ISBN? (T/I): ").strip().upper()
+    keyword = input("Enter search keyword: ").strip()
+    books = load_books()
+    found = False
+    for book in books:
+        if (choice == "T" and keyword.lower() in book["title"].lower()) or \
+                (choice == "I" and keyword == book["isbn"]):
+            print(
+                f"Title: {book['title']} | Author: {book['author']} | ISBN: {book['isbn']} | Status: {book['status']}")
+            found = True
+    if not found:
+        print("No matching book found.")
+
+
+# Main menu
+def menu():
+    while True:
+        print("\nLibrary Book Tracker")
+        print("1. Add Book")
+        print("2. Display Books")
+        print("3. Issue Book")
+        print("4. Return Book")
+        print("5. Search Book")
+        print("6. Exit")
+
+        choice = input("Choose an option (1-6): ")
+        if choice == "1":
+            add_book()
+        elif choice == "2":
+            display_books()
+        elif choice == "3":
+            issue_book()
+        elif choice == "4":
+            return_book()
+        elif choice == "5":
+            search_book()
+        elif choice == "6":
+            print("Exiting...")
+            break
+        else:
+            print("Invalid option. Please try again.")
+
+
+if __name__ == "__main__":
+    menu()
